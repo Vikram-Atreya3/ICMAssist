@@ -16,8 +16,8 @@
     using System.Net;
     using System.Net.Http;
     using Newtonsoft.Json;
-    using System.Runtime.CompilerServices;
-    using Microsoft.Online.Metrics.Serialization;
+
+
 
     internal class Program
     {
@@ -91,62 +91,6 @@
 
 
 
-        }
-
-
-        public static void checkISE(string scaleUnit)
-        {
-            Dictionary<string, string[]> dimensionList = new Dictionary<string, string[]>
-            {
-                { "ScaleUnit", new string[] { scaleUnit } },
-               { "OperationResult", new string[] { "*" } },
-               
-
-            };
-            var connectionInfo = new ConnectionInfo();
-            var reader = new MetricReader(connectionInfo);
-            var id = new MetricIdentifier("servicebus", "OperationQoSMetrics", "IncomingRequests");
-
-
-
-            Console.WriteLine(id.ToString());
-
-
-
-            var dimensionFilters = new List<DimensionFilter>();
-            foreach (var dimension in dimensionList)
-            {
-                dimensionFilters.Add(DimensionFilter.CreateIncludeFilter(dimension.Key, dimension.Value));
-
-
-
-            }
-
-
-      
-
-
-            IQueryResultListV3 results = reader.GetTimeSeriesAsync(
-                id,
-                dimensionFilters,
-                DateTime.UtcNow.AddHours(-3), DateTime.UtcNow,
-                new[] { SamplingType.Sum }
-             ).Result;
-            double[] metrics = new double[] { };
-
-            foreach (var series in results.Results)
-            {
-                Console.WriteLine(series.ToString());
-                IEnumerable<string> dimensions = series.DimensionList.Select(x => string.Format("[{0}, {1}]", x.Key, x.Value));
-                metrics = series.GetTimeSeriesValues(SamplingType.Sum);
-
-
-
-
-
-
-
-            }
         }
         class SeriesObj
         {
@@ -252,12 +196,18 @@
         {
             // If query Geneva Metrics INT environment use : var connectionInfo = new ConnectionInfo(MdmEnvironment.Int);
             var connectionInfo = new ConnectionInfo();
+            Dictionary<string, string[]> dimensionList = new Dictionary<string, string[]>
+            {
+                { "ScaleUnit", new string[] { "prod-dxb20-401" } },
+
+
+            };
+            var metrics = await getMetrics(dimensionList, "servicebus", "OperationQoSMetrics", "IncomingRequests", DateTime.UtcNow.AddHours(-3), DateTime.UtcNow, SamplingType.Sum);
 
 
 
             var reader = new MetricReader(connectionInfo);
             //await checkIfHighIncomingRequests("prod-dxb20-401");
-            checkISE("prod-dxb20-401");
             // Metric name where Account=MetricTeamInternalMetrics, Namespace=PlatformMetrics, Name=\\Memory\\Available MBytes
             /*var id = new MetricIdentifier("servicebus", "OperationQoSMetrics", "Role");
 
@@ -265,7 +215,7 @@
 
             IEnumerable<DimensionFilter> dimensionFilters = new List<DimensionFilter>
             {
-                //f Filter represents the condition : Region
+                // Filter represents the condition : Region
                 DimensionFilter.CreateIncludeFilter("ScaleUnit", "prod-dxb20-401")
             };
 
