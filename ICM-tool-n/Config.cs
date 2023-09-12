@@ -12,18 +12,15 @@ namespace ICM_hackathon_namespace
     {   
         //Endpoints
         public static Uri MDSEndpoint = new Uri("https://production.diagnostics.monitoring.core.windows.net/");
-        public static Uri DGrepEndpoint = new Uri("https://dgrepv2-frontend-prod.trafficmanager.net");
+        public static Uri DGrepEndpoint = new Uri("https://dgrepv2-frontend-prod.trafficmanager.net/");
 
         //Time
         public static DateTimeOffset endtime = DateTimeOffset.UtcNow;
-        public static DateTimeOffset starttime = DateTimeOffset.UtcNow.AddDays(-1);
+        public static DateTimeOffset starttime = DateTimeOffset.UtcNow.AddDays(-5);
 
         //Event Filters
         public const string NamespaceName = "AzureMessagingRuntime";
-        public const string DGrepEventName = "DeploymentUpgradeHistory";
-
-        public static string[] EventFilterNames = { "ScaleUnit", "RoleInstance", "NamespaceName", "OperationResult" };
-        public static List<string>[] EventFilterValues = { ScaleUnitsQ, RoleInstancesQ, NamespaceNamesQ, OpResultsQ };
+        public const string DGrepEventName = "OperationQoSEvents";
 
         public static List<EventFilter> GetEventFilters()
         {
@@ -32,32 +29,45 @@ namespace ICM_hackathon_namespace
         }
 
         //Identity Filters
-        public enum IdentityFilters
+        public enum IdentityFilter
         {
             ScaleUnits,
+            Roles,
             RoleInstances,
             NamespaceNames,
             OpResults
         }
-        protected static List<string> ScaleUnitsQ = new List<string> { "prod-dxb20-401" };
-        protected static List<string> RoleInstancesQ = new List<string> { "SBSQT.17" };
-        protected static List<string> NamespaceNamesQ = new List<string> { "vienna-uaenorth-index" };
+        protected static List<string> ScaleUnitsQ = new List<string> { "PROD-BY-V51011" };
+        protected static List<string> RoleQ = new List<string> { "Backend", "SBSBE" };
+        protected static List<string> RoleInstancesQ = new List<string> { "SBSFE.3", "SBSFE.9" };
+        protected static List<string> NamespaceNamesQ = new List<string> { "pdakswus01sb" };
         protected static List<string> OpResultsQ = new List<string> { "InternalServerError" };
 
-        public static string[] IdentityFilterNames = { "ScaleUnit", "RoleInstance", "NamespaceName", "OperationResult" };
-        public static List<string>[] IdentityFilterValues = { ScaleUnitsQ, RoleInstancesQ, NamespaceNamesQ, OpResultsQ };
+        public static string[] IdentityFilterNames = { "ScaleUnit", "Role", "RoleInstance", "NamespaceName", "OperationResult" };
+        public static List<string>[] IdentityFilterValues = { ScaleUnitsQ, RoleQ, RoleInstancesQ, NamespaceNamesQ, OpResultsQ };
 
+        public static IdentityFilter[] IdentityQueries = {
+              IdentityFilter.ScaleUnits, 
+              IdentityFilter.Roles,
+              //IdentityFilter.RoleInstances, 
+              //IdentityFilter.NamespaceNames,
+              IdentityFilter.OpResults,
+            };
         public static Dictionary<string, List<string>> GetIdentityFilters()
         {   
             var dict = new Dictionary<string, List<string>>();
-            foreach(int filter in Enum.GetValues(typeof(IdentityFilters)))
+            foreach(int filter in IdentityQueries)
             {
                 dict[ IdentityFilterNames[filter] ] = IdentityFilterValues[filter];
             }
             return dict;
         }
 
-        
+
+        //InternalServerErrorNodes
+        public const int NodesCount = 5;
+        public const int ErrorNodeCountFactor = 2;  
+
 
     }
 }
